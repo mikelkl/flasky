@@ -4,6 +4,7 @@ from flask.ext.script import Manager, Shell
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
 from flask.ext.wtf import Form
+from flask.ext.migrate import Migrate, MigrateCommand
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -20,7 +21,8 @@ manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 db = SQLAlchemy(app)
-
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
 
 def make_shell_context():
     return dict(app=app, db=db, User=User, Role=Role)
