@@ -25,6 +25,13 @@
                 <li><a href="/">Home</a></li>
             </ul>
         </div>
+        <ul class="nav navbar-nav navbar-right">
+            {% if current_user.is_authenticated() %}
+            <li><a href="{{ url_for('auth.logout') }}">Sign Out</a></li>
+            {% else %}
+            <li><a href="{{ url_for('auth.login') }}">Sign In</a></li>
+            {% endif %}
+        </ul>
     </div>
 </div>
 {% endblock %}
