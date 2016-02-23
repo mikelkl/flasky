@@ -1,12 +1,10 @@
-from datetime import datetime
-
-from flask import render_template, session, redirect, url_for, abort, flash
+from flask import render_template, redirect, url_for, abort, flash
 from flask.ext.login import login_required, current_user
 from . import main
-from .forms import NameForm, EditProfileForm, EditProfileAdminForm
+from .forms import EditProfileForm, EditProfileAdminForm, PostForm
 from .. import db
-from ..models import User, Role
 from ..decorators import admin_required
+from ..models import User, Role, Permission, Post
 
 
 @main.route('/edit-profile/<int:id>', methods=['GET', 'POST'])
@@ -35,6 +33,7 @@ def edit_profile_admin(id):
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
 
+
 @main.route('/edit-profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
@@ -62,16 +61,10 @@ def user(username):
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    form = NameForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.name.data).first()
-        if user is None:
-            user = User(username=form.name.data)
-            db.session.add(user)
-            session['known'] = False
-        else:
-            session['known'] = True
-        session['name'] = form.name.data
+    form = PostForm()
+    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
+        post = Post(body=form.body.data, author=current_user._get_current_object())
+        db.session.add(post)
         return redirect(url_for('.index'))
-    return render_template('index.html', form=form, name=session.get('name'),
-                           known=session.get('known', False), current_time=datetime.utcnow())
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', form=form, posts=posts)
