@@ -8,6 +8,7 @@
     </li>
     {% for p in pagination.iter_pages() %}
     {% if p %}
+    <!--如果循环出的p是当前页， 高亮之-->
     {% if p == pagination.page %}
     <li class="active">
         <a href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
